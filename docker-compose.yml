@@ -1,0 +1,51 @@
+version: '2.1'
+
+networks:
+    app-tier:
+        driver: bridge
+        
+services:
+  
+  zookeeper:
+    image: 'bitnami/zookeeper:latest'
+    ports:
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - app-tier
+      
+  kafka:
+    image: 'bitnami/kafka:latest'
+    ports:
+      - '9092:9092'
+      - '29092:29092'
+    environment:
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LISTENERS=INTERNAL://:29092,LHOST://:9092
+      - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka:29092,LHOST://localhost:9092
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=LHOST:PLAINTEXT,INTERNAL:PLAINTEXT
+      - KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - app-tier
+   
+      
+  db:
+    image: event-sourcing-mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - 33060:33060
+      - 3306:3306
+
+  adminer:
+    image: event-sourcing-mysql-adminer
+    restart: always
+    ports:
+      - 8181:8181
