@@ -11,16 +11,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cpc.pickup.assignment.query.PickupAssignmentQuery;
 import com.cpc.pickup.assignment.query.PickupAssignmentStatus;
-import com.cpc.pickup.cmd.AssignPickupCmd;
-import com.cpc.pickup.cmd.CompletePickupCmd;
-import com.cpc.pickup.cmd.CreatePickupCmd;
+import com.cpc.pickup.cmd.PickupCmds.AssignPickupCmd;
+import com.cpc.pickup.cmd.PickupCmds.CompletePickupCmd;
+import com.cpc.pickup.cmd.PickupCmds.CreatePickupCmd;
 import com.cpc.pickup.controller.dto.PickupAssignDTO;
 import com.cpc.pickup.controller.dto.PickupCompleteDTO;
 import com.cpc.pickup.controller.dto.PickupCreateDTO;
-import com.cpc.pickup.history.query.PickupRouteHistoryQuery;
 import com.cpc.pickup.history.query.PickupsOnRouteHistory;
+import com.cpc.pickup.query.PickupQuery.PickupAssignmentQuery;
+import com.cpc.pickup.query.PickupQuery.PickupRouteHistoryQuery;
 
 @RestController
 public class PickupController {
@@ -37,19 +37,19 @@ public class PickupController {
 
     @RequestMapping(method = RequestMethod.POST, path = "pickup", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void createPickup(@RequestBody PickupCreateDTO dto) {
-        CreatePickupCmd cmd = CreatePickupCmd.builder().pickupId(dto.getPickupId()).pickupAddress(dto.getPickupAddress()).pickupDate(dto.getPickupDate()).build();
+        CreatePickupCmd cmd = new CreatePickupCmd(dto.getPickupId(), dto.getPickupDate(), dto.getPickupAddress());
         gateway.send(cmd);
     }
     
     @RequestMapping(method = RequestMethod.PUT, path = "pickup/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void assignPickup(@RequestBody PickupAssignDTO dto) {
-        AssignPickupCmd cmd = AssignPickupCmd.builder().pickupId(dto.getPickupId()).route(dto.getRoute()).build();
+        AssignPickupCmd cmd = new AssignPickupCmd(dto.getPickupId(), dto.getRoute());
         gateway.send(cmd);
     }
     
     @RequestMapping(method = RequestMethod.PUT, path = "pickup/{id}/complete", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void completePickup(@RequestBody PickupCompleteDTO dto, @PathVariable("id")  String pickupId) {
-        CompletePickupCmd cmd = CompletePickupCmd.builder().dateTime(dto.getCompleteDateTime()).pickupId(pickupId).route(dto.getRoute()).build();
+        CompletePickupCmd cmd = new CompletePickupCmd(pickupId, dto.getRoute(), dto.getCompleteDateTime());
         gateway.send(cmd);
     }
     

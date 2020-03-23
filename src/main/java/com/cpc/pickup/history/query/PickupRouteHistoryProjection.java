@@ -8,7 +8,8 @@ import org.axonframework.eventhandling.EventHandler;
 import org.axonframework.queryhandling.QueryHandler;
 import org.springframework.stereotype.Component;
 
-import com.cpc.pickup.event.AssignPickupEvent;
+import com.cpc.pickup.event.PickupEvents.AssignPickupEvent;
+import com.cpc.pickup.query.PickupQuery.PickupRouteHistoryQuery;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,13 +22,13 @@ public class PickupRouteHistoryProjection {
     
     @EventHandler
     public void onAssign(AssignPickupEvent event) {
-        PickupsOnRouteHistory onRoute = entityManager.find(PickupsOnRouteHistory.class, event.getPickupId());
+        PickupsOnRouteHistory onRoute = entityManager.find(PickupsOnRouteHistory.class, event.pickupId());
         if(onRoute!=null) {
-            onRoute.getRouteHistory().add(RouteAssignment.builder().route(event.getRoute()).assignedDateTime(LocalDateTime.now()).build());
+            onRoute.getRouteHistory().add(RouteAssignment.builder().route(event.route()).assignedDateTime(LocalDateTime.now()).build());
         }else {
             onRoute = new PickupsOnRouteHistory();
-            onRoute.setPickupId(event.getPickupId());
-            onRoute.getRouteHistory().add(RouteAssignment.builder().route(event.getRoute()).assignedDateTime(LocalDateTime.now()).build());
+            onRoute.setPickupId(event.pickupId());
+            onRoute.getRouteHistory().add(RouteAssignment.builder().route(event.route()).assignedDateTime(LocalDateTime.now()).build());
             entityManager.persist(onRoute);
         }
         
@@ -36,7 +37,7 @@ public class PickupRouteHistoryProjection {
 
     @QueryHandler
     public PickupsOnRouteHistory queryPickupAssignment(PickupRouteHistoryQuery query) {
-        return entityManager.find(PickupsOnRouteHistory.class, query.getPickupId());
+        return entityManager.find(PickupsOnRouteHistory.class, query.pickupId());
     }
     
 }
